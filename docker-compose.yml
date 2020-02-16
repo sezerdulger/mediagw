@@ -1,0 +1,45 @@
+version: "2"
+services:
+  nginx:
+    image: library/nginx:alpine
+    volumes:
+      - /root/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /root/nginx/secrets:/secrets:ro
+    ports:
+      - 80:80
+      - 443:443
+    links:
+      - keycloak:keycloak
+      - adminer:adminer
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=keycloak
+      - POSTGRES_DB=keycloak
+      - POSTGRES_PASSWORD=RAPtor1234
+    ports:
+      - 5432:5432
+    volumes:
+      - /root/postgres:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+  keycloak:
+    image: keycloak
+    environment:
+      - DB_USER=keycloak
+      - DB_PASSWORD=RAPtor1234
+      - DB_ADDR=postgres:5432
+      - PROXY_ADDRESS_FORWARDING=true
+      - KEYCLOAK_USER=keycloak
+      - KEYCLOAK_PASSWORD=RAPtor1234
+    ports:
+      - 8081:8080
+    links:
+      - postgres:postgres
+volumes:
+  static:
+    driver: local
